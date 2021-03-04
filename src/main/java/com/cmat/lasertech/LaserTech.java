@@ -1,14 +1,21 @@
 package com.cmat.lasertech;
 
+import com.cmat.lasertech.client.KeyHandler;
+import com.cmat.lasertech.client.render.entity.RenderBaseLaserProjectile;
+import com.cmat.lasertech.item.MiningLaserItem;
+import com.cmat.lasertech.laser.BaseLaserItem;
+import com.cmat.lasertech.network.PacketHandler;
 import com.cmat.lasertech.util.FluidRegisterHandle;
 import com.cmat.lasertech.util.Strings;
 import net.minecraft.block.Block;
-import net.minecraft.entity.EntityType;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemGroup;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.Tuple;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.RegistryObject;
+import net.minecraftforge.fml.client.registry.RenderingRegistry;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -25,17 +32,24 @@ import java.util.LinkedHashMap;
 
 @Mod("lasertech")
 public class LaserTech {
-    private static final Logger LOGGER = LogManager.getLogger();
+    public static final Logger LOGGER = LogManager.getLogger();
 
     private static final DeferredRegister<Item> itemRegister = DeferredRegister.create(ForgeRegistries.ITEMS, Strings.ModID);
     private static final DeferredRegister<Fluid> fluidRegister = DeferredRegister.create(ForgeRegistries.FLUIDS, Strings.ModID);
     private static final DeferredRegister<Block> blockRegister = DeferredRegister.create(ForgeRegistries.BLOCKS, Strings.ModID);
-    private static final DeferredRegister<EntityType<?>> entityRegister = DeferredRegister.create(ForgeRegistries.ENTITIES, Strings.ModID);
 
     public static final LinkedHashMap<String, RegistryObject<Item>> customItems = new LinkedHashMap<String, RegistryObject<Item>>();
     public static final LinkedHashMap<String, Tuple<RegistryObject<Block>, RegistryObject<Item>>> customBlocks = new LinkedHashMap<>();
     public static final LinkedHashMap<String, FluidRegisterHandle> customFluids = new LinkedHashMap<String, FluidRegisterHandle>();
-    public static final LinkedHashMap<String, RegistryObject<EntityType<?>>> customEntities = new LinkedHashMap<>();
+
+    public static final PacketHandler packetHandler = new PacketHandler();
+
+    public static final ItemGroup LaserTechCreativeTab = new ItemGroup(Strings.ModID) {
+        @Override
+        public ItemStack createIcon() {
+            return new ItemStack(customItems.get(Strings.MiningLaserName).get());
+        }
+    };
 
     public LaserTech() {
         // Register the setup method for modloading
@@ -50,7 +64,10 @@ public class LaserTech {
         itemRegister.register(FMLJavaModLoadingContext.get().getModEventBus());
         fluidRegister.register(FMLJavaModLoadingContext.get().getModEventBus());
         blockRegister.register(FMLJavaModLoadingContext.get().getModEventBus());
-        entityRegister.register(FMLJavaModLoadingContext.get().getModEventBus());
+
+        ModEntities.ENTITIES.register(FMLJavaModLoadingContext.get().getModEventBus());
+
+        packetHandler.init();
 
         doItemRegister();
         doFluidRegister();
@@ -59,7 +76,7 @@ public class LaserTech {
     }
 
     private void doItemRegister() {
-
+        customItems.put(Strings.MiningLaserName, itemRegister.register(Strings.MiningLaserName, () -> new MiningLaserItem()));
     }
 
     private void doFluidRegister() {
@@ -79,6 +96,8 @@ public class LaserTech {
     }
 
     private void doClientStuff(final FMLClientSetupEvent event) {
+        RenderingRegistry.registerEntityRenderingHandler(ModEntities.BASELASERPROJECTILE.get(), RenderBaseLaserProjectile.FACTORY);
+        new KeyHandler();
     }
 
     private void enqueueIMC(final InterModEnqueueEvent event) {
