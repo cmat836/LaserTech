@@ -1,6 +1,7 @@
 package com.cmat.lasertech;
 
 import com.cmat.lasertech.entity.BaseLaserProjectile;
+import com.cmat.lasertech.entity.ExplosiveLaserProjectile;
 import com.cmat.lasertech.util.Strings;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityClassification;
@@ -17,6 +18,9 @@ public class ModEntities {
     public static final RegistryObject<EntityType<BaseLaserProjectile>> BASELASERPROJECTILE =
             register("baselaserprojectile", ModEntities::baselaserprojectile);
 
+    public static final RegistryObject<EntityType<BaseLaserProjectile>> EXPLOSIVELASERPROJECTILE =
+            register("explosivelaserprojectile", ModEntities::explosivelaserprojectile);
+
     private static <E extends Entity> RegistryObject<EntityType<E>> register(final String name, final Supplier<EntityType.Builder<E>> sup) {
         return ENTITIES.register(name, () -> sup.get().build(name));
     }
@@ -28,6 +32,16 @@ public class ModEntities {
                 .setTrackingRange(5)
                 .setUpdateInterval(1)
                 .setCustomClientFactory((spawnEntity, world) -> ModEntities.BASELASERPROJECTILE.get().create(world))
+                .setShouldReceiveVelocityUpdates(true);
+    }
+
+    private static EntityType.Builder<BaseLaserProjectile> explosivelaserprojectile() {
+        return EntityType.Builder.<BaseLaserProjectile>create(ExplosiveLaserProjectile::new, EntityClassification.MISC)
+                .size(0.5f, 0.5f)
+                .immuneToFire()
+                .setTrackingRange(5)
+                .setUpdateInterval(1)
+                .setCustomClientFactory((spawnEntity, world) -> ModEntities.EXPLOSIVELASERPROJECTILE.get().create(world))
                 .setShouldReceiveVelocityUpdates(true);
     }
 }

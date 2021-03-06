@@ -5,33 +5,34 @@ import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.projectile.ProjectileHelper;
 import net.minecraft.entity.projectile.ThrowableEntity;
 import net.minecraft.network.IPacket;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.util.DamageSource;
-import net.minecraft.util.math.BlockRayTraceResult;
-import net.minecraft.util.math.EntityRayTraceResult;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.*;
+import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.Explosion;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.network.NetworkHooks;
 
 public class BaseLaserProjectile extends ThrowableEntity {
     private static final DataParameter<Integer> LIFETIME = EntityDataManager.createKey(BaseLaserProjectile.class, DataSerializers.VARINT);
-    private static final DataParameter<Integer> BREAKPOWER = EntityDataManager.createKey(BaseLaserProjectile.class, DataSerializers.VARINT);
-    private static final DataParameter<Boolean> EXPLODESONIMPACT = EntityDataManager.createKey(BaseLaserProjectile.class, DataSerializers.BOOLEAN);
+    private static final DataParameter<Float> BREAKPOWER = EntityDataManager.createKey(BaseLaserProjectile.class, DataSerializers.FLOAT);
+    private static final DataParameter<Float> MINIMUMBREAK = EntityDataManager.createKey(BaseLaserProjectile.class, DataSerializers.FLOAT);
     private static final DataParameter<Integer> DAMAGE = EntityDataManager.createKey(BaseLaserProjectile.class, DataSerializers.VARINT);
 
-    private int lifeTime = 30;
-    private int breakPower = 10;
-    private boolean explodesOnImpact = false;
-    private int damage = 6;
+    protected int lifeTime = 5;
+    protected float breakPower = 6f;
+    protected float minimumBreak = 4.5f;
+    protected int damage = 6;
 
-    private float breakPowerRemaining;
-    private int lifeTimeRemaining;
+    protected float breakPowerRemaining;
+    protected int lifeTimeRemaining;
+
+    public LivingEntity shooter;
 
     public BaseLaserProjectile(EntityType<BaseLaserProjectile> type, World worldIn) {
         super(type, worldIn);
@@ -39,20 +40,23 @@ public class BaseLaserProjectile extends ThrowableEntity {
 
     public BaseLaserProjectile(EntityType<BaseLaserProjectile> type, LivingEntity thrower, World worldIn) {
         super(type, thrower, worldIn);
+        shooter = thrower;
     }
 
-    public void setParams(int lifetime, int breakpower, boolean explodesonimpact, int damage) {
+    public void setParams(int lifetime, float breakpower, float minimumbreak, int damage) {
         lifeTime = lifetime;
         breakPower = breakpower;
-        explodesOnImpact = explodesonimpact;
-        damage = damage;
+        minimumBreak = minimumbreak;
+        this.damage = damage;
+        breakPowerRemaining = breakpower;
+        lifeTimeRemaining = lifetime;
     }
 
     public int getLifeTime() {
         return lifeTime;
     }
 
-    public int getBreakPower() {
+    public float getBreakPower() {
         return breakPower;
     }
 
@@ -60,15 +64,11 @@ public class BaseLaserProjectile extends ThrowableEntity {
         return damage;
     }
 
-    public boolean getExplodesOnImpact() {
-        return explodesOnImpact;
-    }
-
     @Override
     protected void registerData() {
-        dataManager.register(LIFETIME, 30);
-        dataManager.register(BREAKPOWER, 10);
-        dataManager.register(EXPLODESONIMPACT, false);
+        dataManager.register(LIFETIME, 5);
+        dataManager.register(BREAKPOWER, 6f);
+        dataManager.register(MINIMUMBREAK, 4.5f);
         dataManager.register(DAMAGE, 6);
     }
 
@@ -79,9 +79,9 @@ public class BaseLaserProjectile extends ThrowableEntity {
                 lifeTime = dataManager.get(LIFETIME);
             } else if (key.equals(BREAKPOWER)) {
                 breakPower = dataManager.get(BREAKPOWER);
-            } else if (key.equals(EXPLODESONIMPACT)) {
-                explodesOnImpact = dataManager.get(EXPLODESONIMPACT);
-            } else if (key.equals(DAMAGE)) {
+            } else if (key.equals(MINIMUMBREAK)) {
+                minimumBreak = dataManager.get(MINIMUMBREAK);
+            }else if (key.equals(DAMAGE)) {
                 damage = dataManager.get(DAMAGE);
             }
         }
@@ -92,22 +92,40 @@ public class BaseLaserProjectile extends ThrowableEntity {
         return NetworkHooks.getEntitySpawningPacket(this);
     }
 
-    @Override
     public void tick() {
+        Vector3d motion = getMotion();
+        Vector3d pos = getPositionVec();
         super.tick();
-
         if (ticksExisted == 1) {
             if (!getEntityWorld().isRemote) {
-                breakPowerRemaining = breakPower;
-                lifeTimeRemaining = lifeTime;
                 dataManager.set(LIFETIME, lifeTime);
                 dataManager.set(BREAKPOWER, breakPower);
-                dataManager.set(EXPLODESONIMPACT, explodesOnImpact);
                 dataManager.set(DAMAGE, damage);
+                dataManager.set(MINIMUMBREAK, minimumBreak);
             } else {
                 //getEntityWorld().playSound(getPosX(), getPosY(), getPosZ(), SoundEvents.ENTITY_FIREWORK_ROCKET_LAUNCH, SoundCategory.PLAYERS, 1.0f, 0.8f, true);
             }
         }
+
+        if (!getEntityWorld().isRemote) {
+        RayTraceResult raytraceresult = doRayTrace(pos, motion);
+
+            while (raytraceresult.getType() != RayTraceResult.Type.MISS) {
+                raytraceresult = doRayTrace(pos, motion);
+                if (raytraceresult.getType() != RayTraceResult.Type.MISS && !net.minecraftforge.event.ForgeEventFactory.onProjectileImpact(this, raytraceresult)) {
+                    RayTraceResult.Type type = raytraceresult.getType();
+                    if (type == RayTraceResult.Type.ENTITY) {
+                        this.onEntityHit((EntityRayTraceResult) raytraceresult);
+                        break;
+                    } else if (type == RayTraceResult.Type.BLOCK) {
+                        if (!this.onBlockHit((BlockRayTraceResult)raytraceresult)) {
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
 
         lifeTimeRemaining--;
         if (lifeTimeRemaining == 0) {
@@ -122,18 +140,22 @@ public class BaseLaserProjectile extends ThrowableEntity {
 
     }
 
+    protected RayTraceResult doRayTrace(Vector3d pos, Vector3d motion) {
+        Vector3d end = pos.add(motion);
+        RayTraceResult raytraceresult = world.rayTraceBlocks(new RayTraceContext(pos, end, RayTraceContext.BlockMode.COLLIDER, RayTraceContext.FluidMode.NONE, this));
+        if (raytraceresult.getType() != RayTraceResult.Type.MISS) {
+            end = raytraceresult.getHitVec();
+        }
+        RayTraceResult raytraceresult1 = ProjectileHelper.rayTraceEntities(world, this, pos, end, getBoundingBox().expand(getMotion()).grow(4.0D), this::func_230298_a_);
+        if (raytraceresult1 != null) {
+            raytraceresult = raytraceresult1;
+        }
+        return raytraceresult;
+    }
+
     @Override
     protected void onImpact(RayTraceResult result) {
-        if (!getEntityWorld().isRemote) {
-            RayTraceResult.Type type = result.getType();
-            if (type == RayTraceResult.Type.ENTITY) {
 
-                this.onEntityHit((EntityRayTraceResult) result);
-
-            } else if (type == RayTraceResult.Type.BLOCK) {
-                this.onBlockHit((BlockRayTraceResult) result);
-            }
-        }
     }
 
     @Override
@@ -142,14 +164,27 @@ public class BaseLaserProjectile extends ThrowableEntity {
         remove();
     }
 
-    protected void onBlockHit(BlockRayTraceResult res) {
+    protected boolean onBlockHit(BlockRayTraceResult res) {
+        // Get block and hardness
         BlockState blockState = getEntityWorld().getBlockState(res.getPos());
         float hardness = blockState.getBlockHardness(getEntityWorld(), res.getPos());
-        breakPowerRemaining -= hardness;
-        if (breakPowerRemaining >= 0) {
-            getEntityWorld().removeBlock(res.getPos(), false);
-        } else {
+
+        // If its bedrock, or too hard for this beam, return
+        if (hardness == -1 || hardness > minimumBreak) {
             remove();
+            return false;
+        }
+
+        breakPowerRemaining -= hardness;
+
+        // Return true if the beam continues
+        if (breakPowerRemaining > 0) {
+            getEntityWorld().destroyBlock(res.getPos(), true, shooter);
+            return true;
+        } else {
+            getEntityWorld().destroyBlock(res.getPos(), true, shooter);
+            remove();
+            return false;
         }
     }
 

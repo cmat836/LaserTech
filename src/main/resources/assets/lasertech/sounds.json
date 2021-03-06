@@ -1,0 +1,22 @@
+{
+  "laser_standard": {
+    "category": "item",
+    "subtitle": "lasertech.subtitle.standard_laser",
+    "sounds": [ "lasertech:mininglaser" ]
+  },
+  "laser_low_focus": {
+    "category": "item",
+    "subtitle": "lasertech.subtitle.low_focus_laser",
+    "sounds": [ "lasertech:mininglaserlowfocus" ]
+  },
+  "laser_long_lange": {
+    "category": "item",
+    "subtitle": "lasertech.subtitle.long_range_laser",
+    "sounds": [ "lasertech:mininglaserlongrange" ]
+  },
+  "laser_explosive": {
+    "category": "item",
+    "subtitle": "lasertech.subtitle.explosive_laser",
+    "sounds": [ "lasertech:mininglaserexplosive" ]
+  }
+}

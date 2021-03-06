@@ -1,9 +1,9 @@
 package com.cmat.lasertech;
 
 import com.cmat.lasertech.client.KeyHandler;
+import com.cmat.lasertech.client.ModSounds;
 import com.cmat.lasertech.client.render.entity.RenderBaseLaserProjectile;
-import com.cmat.lasertech.item.MiningLaserItem;
-import com.cmat.lasertech.laser.BaseLaserItem;
+import com.cmat.lasertech.item.MiningLaserBasicItem;
 import com.cmat.lasertech.network.PacketHandler;
 import com.cmat.lasertech.util.FluidRegisterHandle;
 import com.cmat.lasertech.util.Strings;
@@ -34,20 +34,12 @@ import java.util.LinkedHashMap;
 public class LaserTech {
     public static final Logger LOGGER = LogManager.getLogger();
 
-    private static final DeferredRegister<Item> itemRegister = DeferredRegister.create(ForgeRegistries.ITEMS, Strings.ModID);
-    private static final DeferredRegister<Fluid> fluidRegister = DeferredRegister.create(ForgeRegistries.FLUIDS, Strings.ModID);
-    private static final DeferredRegister<Block> blockRegister = DeferredRegister.create(ForgeRegistries.BLOCKS, Strings.ModID);
-
-    public static final LinkedHashMap<String, RegistryObject<Item>> customItems = new LinkedHashMap<String, RegistryObject<Item>>();
-    public static final LinkedHashMap<String, Tuple<RegistryObject<Block>, RegistryObject<Item>>> customBlocks = new LinkedHashMap<>();
-    public static final LinkedHashMap<String, FluidRegisterHandle> customFluids = new LinkedHashMap<String, FluidRegisterHandle>();
-
     public static final PacketHandler packetHandler = new PacketHandler();
 
     public static final ItemGroup LaserTechCreativeTab = new ItemGroup(Strings.ModID) {
         @Override
         public ItemStack createIcon() {
-            return new ItemStack(customItems.get(Strings.MiningLaserName).get());
+            return new ItemStack(ModItems.BASICMININGLASER.get());
         }
     };
 
@@ -61,34 +53,11 @@ public class LaserTech {
         // Register the doClientStuff method for modloading
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::doClientStuff);
 
-        itemRegister.register(FMLJavaModLoadingContext.get().getModEventBus());
-        fluidRegister.register(FMLJavaModLoadingContext.get().getModEventBus());
-        blockRegister.register(FMLJavaModLoadingContext.get().getModEventBus());
-
         ModEntities.ENTITIES.register(FMLJavaModLoadingContext.get().getModEventBus());
+        ModItems.ITEMS.register(FMLJavaModLoadingContext.get().getModEventBus());
+        ModSounds.SOUNDS.register(FMLJavaModLoadingContext.get().getModEventBus());
 
         packetHandler.init();
-
-        doItemRegister();
-        doFluidRegister();
-        doBlockRegister();
-        doEntityRegister();
-    }
-
-    private void doItemRegister() {
-        customItems.put(Strings.MiningLaserName, itemRegister.register(Strings.MiningLaserName, () -> new MiningLaserItem()));
-    }
-
-    private void doFluidRegister() {
-
-    }
-
-    private void doBlockRegister() {
-
-    }
-
-    private void doEntityRegister() {
-
     }
 
     private void setup(final FMLCommonSetupEvent event) {
@@ -97,6 +66,7 @@ public class LaserTech {
 
     private void doClientStuff(final FMLClientSetupEvent event) {
         RenderingRegistry.registerEntityRenderingHandler(ModEntities.BASELASERPROJECTILE.get(), RenderBaseLaserProjectile.FACTORY);
+        RenderingRegistry.registerEntityRenderingHandler(ModEntities.EXPLOSIVELASERPROJECTILE.get(), RenderBaseLaserProjectile.FACTORY);
         new KeyHandler();
     }
 
