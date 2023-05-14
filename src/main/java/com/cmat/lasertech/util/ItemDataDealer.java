@@ -1,9 +1,6 @@
 package com.cmat.lasertech.util;
 
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.ByteArrayNBT;
-import net.minecraftforge.common.util.Constants;
+import net.minecraft.world.item.ItemStack;
 
 public class ItemDataDealer {
     public static void setInt(ItemStack item, String dataname, int data) {
@@ -28,5 +25,17 @@ public class ItemDataDealer {
 
     public static String getString(ItemStack item, String dataname) {
         return item.getTag().getString(dataname);
+    }
+
+    public static void setBoolean(ItemStack item, String dataname, boolean data) {
+        item.getTag().putBoolean(dataname, data);
+    }
+
+    public static boolean getBoolean(ItemStack item, String dataname) {
+        return item.getTag().getBoolean(dataname);
+    }
+
+    public static void toggleBoolean(ItemStack item, String dataname) {
+        setBoolean(item, dataname, !getBoolean(item, dataname));
     }
 }

@@ -1,14 +1,12 @@
 package com.cmat.lasertech.network;
 
-import com.cmat.lasertech.LaserTech;
-import com.cmat.lasertech.laser.BaseLaserItem;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.EquipmentSlotType;
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketBuffer;
-import net.minecraftforge.fml.network.NetworkEvent;
+import com.cmat.lasertech.item.BaseLaserItem;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.network.NetworkEvent;
 
-import javax.jws.WebParam;
 import java.util.function.Supplier;
 
 public class ModeChangePacket {
@@ -18,20 +16,20 @@ public class ModeChangePacket {
         this.type = type;
     }
 
-    public static void encode(ModeChangePacket msg, PacketBuffer packetBuffer) {
-        packetBuffer.writeEnumValue(msg.type);
+    public static void encode(ModeChangePacket msg, FriendlyByteBuf packetBuffer) {
+        packetBuffer.writeEnum(msg.type);
     }
 
-    public static ModeChangePacket decode(PacketBuffer packetBuffer) {
-        return new ModeChangePacket(packetBuffer.readEnumValue(ModeChangeType.class));
+    public static ModeChangePacket decode(FriendlyByteBuf packetBuffer) {
+        return new ModeChangePacket(packetBuffer.readEnum(ModeChangeType.class));
     }
 
     public static void handle(ModeChangePacket msg, Supplier<NetworkEvent.Context> contextSupplier) {
         NetworkEvent.Context ctx = (NetworkEvent.Context)contextSupplier.get();
         ctx.enqueueWork(() -> {
-            PlayerEntity player = ctx.getSender();
+            Player player = ctx.getSender();
             if (player != null) {
-                ItemStack stack = player.getItemStackFromSlot(EquipmentSlotType.MAINHAND);
+                ItemStack stack = player.getItemBySlot(EquipmentSlot.MAINHAND);
                 if (!stack.isEmpty() && stack.getItem() instanceof BaseLaserItem) {
                     if (msg.type == ModeChangeType.LASERMODE) {
                         ((BaseLaserItem)stack.getItem()).changeLaserMode(player, stack);

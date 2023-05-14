@@ -1,12 +1,12 @@
 package com.cmat.lasertech.laser;
 
 public enum MiningLaserMode implements ILaserMode {
-    LOW_FOCUS("LOW_FOCUS", 200, 2, 3, 0.6f, 4.5f, 4, 2.5f),
-    STANDARD( "STANDARD", 2500, 6, 5, 8f, 5f, 8, 2.5f),
-    LONG_RANGE("LONG_RANGE",  10000, 10, 20, 40f, 22.5f, 10, 2.5f),
-    COMBAT("COMBAT", 5000, 16, 10, 1.5f, 1.5f, 16, 4.5f),
-    HIGH_FOCUS("HIGH_FOCUS", 5000, 30, 3, 4.5f, 100f, 8, 2f),
-    EXPLOSIVE("EXPLOSIVE", 10000, 25, 25, 1.5f, 4.5f, 8, 2f);
+    LOW_FOCUS("LOW_FOCUS", 200, 2, 3, 0.6f, 4.5f, 4, 2.5f, 1),
+    STANDARD( "STANDARD", 2500, 6, 5, 8f, 5f, 8, 2.5f, 1),
+    LONG_RANGE("LONG_RANGE",  10000, 10, 20, 40f, 22.5f, 10, 2.5f, 2),
+    COMBAT("COMBAT", 5000, 16, 10, 1.5f, 1.5f, 16, 4.5f, 1),
+    HIGH_FOCUS("HIGH_FOCUS", 5000, 30, 3, 4.5f, 100f, 8, 2f, 4),
+    EXPLOSIVE("EXPLOSIVE", 10000, 25, 25, 1.5f, 4.5f, 8, 2f, 1);
 
     String modeName;
     int energyCost;
@@ -16,8 +16,9 @@ public enum MiningLaserMode implements ILaserMode {
     float minimumBreak;
     int damage;
     float velocity;
+    int piercePower;
 
-    MiningLaserMode(String name, int energycost, int cooldown, int life, float breakpower, float minbreak, int dmg, float vel) {
+    MiningLaserMode(String name, int energycost, int cooldown, int life, float breakpower, float minbreak, int dmg, float vel, int piercepower) {
         modeName = name;
         energyCost = energycost;
         coolDown = cooldown;
@@ -26,6 +27,7 @@ public enum MiningLaserMode implements ILaserMode {
         minimumBreak = minbreak;
         damage = dmg;
         velocity = vel;
+        piercePower = piercepower;
     }
 
     public int getCoolDown() {
@@ -40,6 +42,7 @@ public enum MiningLaserMode implements ILaserMode {
     public String getName() {
         return modeName;
     }
+    public int getPiercePower() { return piercePower; }
 
     public ILaserMode getFromString(String name) {
         return MiningLaserMode.valueOf(name);

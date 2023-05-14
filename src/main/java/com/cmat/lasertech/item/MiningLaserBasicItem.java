@@ -4,11 +4,11 @@ import com.cmat.lasertech.ModEntities;
 import com.cmat.lasertech.entity.BaseLaserProjectile;
 import com.cmat.lasertech.laser.*;
 import com.cmat.lasertech.util.ItemDataDealer;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.world.World;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 
 public class MiningLaserBasicItem extends BaseLaserItem {
 
@@ -17,22 +17,22 @@ public class MiningLaserBasicItem extends BaseLaserItem {
     }
 
     @Override
-    public void fireLaser(World worldIn, PlayerEntity playerIn, Hand handIn) {
-        ItemStack stack = playerIn.getHeldItem(handIn);
+    public void fireLaser(Level worldIn, Player playerIn, InteractionHand handIn) {
+        ItemStack stack = playerIn.getItemInHand(handIn);
 
         MiningLaserModeBasic m = (MiningLaserModeBasic)getLaserMode(stack);
 
         BaseLaserProjectile laser = new BaseLaserProjectile(ModEntities.BASELASERPROJECTILE.get(), playerIn, worldIn);
-        Vector3d newPos = laser.getPositionVec();//.add(playerIn.getLookVec().normalize().scale(0.2));
-        laser.setPosition(newPos.x, newPos.y, newPos.z);
-        laser.setParams(m.getLifeTime(), m.getBreakPower(), m.getMinimumBreak(), m.getDamage());
-        laser.fireLaser(playerIn, playerIn.rotationPitch, playerIn.rotationYaw, 0.0f, m.getVelocity(), 0.0f);
+        Vec3 newPos = laser.position();//.add(playerIn.getLookVec().normalize().scale(0.2));
+        laser.setPos(newPos.x, newPos.y, newPos.z);
+        laser.setParams(m.getLifeTime(), m.getBreakPower(), m.getMinimumBreak(), m.getDamage(), 0, m.getPiercePower());
+        laser.fireLaser(playerIn, playerIn.getXRot(), playerIn.getYRot(),0.0f, m.getVelocity(), 0.0f);
 
-        playerIn.getCooldownTracker().setCooldown(this, m.getCoolDown());
+        playerIn.getCooldowns().addCooldown(this, m.getCoolDown());
 
-        if (!worldIn.isRemote) {
+        if (!worldIn.isClientSide) {
             if (getFireMode(stack) != FireMode.SAFE) {
-                worldIn.addEntity(laser);
+                worldIn.addFreshEntity(laser);
             }
         }
     }

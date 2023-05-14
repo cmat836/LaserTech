@@ -1,26 +1,26 @@
 package com.cmat.lasertech.util;
 
-import net.minecraft.block.FlowingFluidBlock;
-import net.minecraft.fluid.Fluid;
-import net.minecraft.item.BucketItem;
-import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.RegistryObject;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.BucketItem;
+import net.minecraft.world.level.material.FlowingFluid;
+import net.minecraft.world.level.material.Fluid;
 import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.RegistryObject;
 
 import javax.annotation.Nonnull;
 import java.util.Objects;
 
-public class FluidRegisterHandle<STILL extends Fluid, FLOWING extends Fluid, BLOCK extends FlowingFluidBlock, BUCKET extends BucketItem> {
+public class FluidRegisterHandle<STILL extends Fluid, FLOWING extends Fluid, BLOCK extends FlowingFluid, BUCKET extends BucketItem> {
     private RegistryObject<STILL> stillRO;
     private RegistryObject<FLOWING> flowingRO;
     private RegistryObject<BLOCK> blockRO;
     private RegistryObject<BUCKET> bucketRO;
 
     public FluidRegisterHandle(String modid, String name) {
-        this.stillRO = RegistryObject.of(new ResourceLocation(modid, name), ForgeRegistries.FLUIDS);
-        this.flowingRO = RegistryObject.of(new ResourceLocation(modid, name + "_flowing"), ForgeRegistries.FLUIDS);
-        this.blockRO = RegistryObject.of(new ResourceLocation(modid, name), ForgeRegistries.BLOCKS);
-        this.bucketRO = RegistryObject.of(new ResourceLocation(modid, name + "_bucket"), ForgeRegistries.ITEMS);
+        this.stillRO = RegistryObject.create(new ResourceLocation(modid, name), ForgeRegistries.FLUIDS);
+        this.flowingRO = RegistryObject.create(new ResourceLocation(modid, name + "_flowing"), ForgeRegistries.FLUIDS);
+        //his.blockRO = RegistryObject.create(new ResourceLocation(modid, name), ForgeRegistries.BLOCKS);
+        this.bucketRO = RegistryObject.create(new ResourceLocation(modid, name + "_bucket"), ForgeRegistries.ITEMS);
     }
 
     public STILL getStillFluid() {

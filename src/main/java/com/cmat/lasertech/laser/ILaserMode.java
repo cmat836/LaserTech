@@ -5,32 +5,34 @@ public interface ILaserMode {
      * Cooldown after the laser is fired
      * @return
      */
-    public int getCoolDown();
-    public int getEnergyCost();
+    int getCoolDown();
+    int getEnergyCost();
 
     /**
      * How many ticks the laser lasts for
      * @return
      */
-    public int getLifeTime();
+    int getLifeTime();
 
     /**
      * Total material hardness the laser can penetrate
      * @return
      */
-    public float getBreakPower();
+    float getBreakPower();
 
     /**
      * The highest hardness the laser can break
      * will also break blocks of this hardness even if insufficient break power remains
      * @return
      */
-    public float getMinimumBreak();
-    public int getDamage();
-    public float getVelocity();
+    float getMinimumBreak();
+    int getDamage();
+    float getVelocity();
+    int getPiercePower();
 
-    public String getName();
 
-    public ILaserMode getFromString(String name);
-    public ILaserMode getNextMode(ILaserMode mode);
+    String getName();
+
+    ILaserMode getFromString(String name);
+    ILaserMode getNextMode(ILaserMode mode);
 }
