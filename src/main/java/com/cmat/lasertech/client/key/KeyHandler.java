@@ -16,7 +16,7 @@ import org.lwjgl.glfw.GLFW;
 @Mod.EventBusSubscriber(modid = "lasertech", value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class KeyHandler {
 
-    public static final KeyMapping laserModeSwitch = new LTKeyBindingBuilder().description("Mode").conflictInGame().keyCode(GLFW.GLFW_KEY_M).onKeyDown((kb, isRepeat) -> {
+    public static final KeyMapping laserModeSwitch = new LTKeyBindingBuilder().description("LMode").conflictInGame().keyCode(GLFW.GLFW_KEY_M).onKeyDown((kb, isRepeat) -> {
         Player player = Minecraft.getInstance().player;
         if (player != null) {
             if (player.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof BaseLaserItem) {
@@ -26,7 +26,7 @@ public class KeyHandler {
 
     }).build();
 
-    public static final KeyMapping fireModeSwitch = new LTKeyBindingBuilder().description("Mode").conflictInGame().keyCode(GLFW.GLFW_KEY_N).onKeyDown((kb, isRepeat) -> {
+    public static final KeyMapping fireModeSwitch = new LTKeyBindingBuilder().description("FMode").conflictInGame().keyCode(GLFW.GLFW_KEY_N).onKeyDown((kb, isRepeat) -> {
         Player player = Minecraft.getInstance().player;
         if (player != null) {
             if (player.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof BaseLaserItem) {

@@ -54,8 +54,8 @@ public class AdvancedCombatLaserItem extends BaseLaserItem {
             lasers.add(b);
         }
 
-        if (getFireMode(stack) != FireMode.SAFE) {
-            if (worldIn.isClientSide) {
+        if (getFireMode(stack) != FireModeCombat.SAFE) {
+            if (!worldIn.isClientSide) {
                 for (BaseLaserProjectile b : lasers) {
                     worldIn.addFreshEntity(b);
                 }

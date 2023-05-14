@@ -1,5 +1,6 @@
 package com.cmat.lasertech.item;
 
+import com.cmat.lasertech.LaserTech;
 import com.cmat.lasertech.ModEntities;
 import com.cmat.lasertech.entity.BaseLaserProjectile;
 import com.cmat.lasertech.laser.*;
@@ -31,7 +32,8 @@ public class MiningLaserBasicItem extends BaseLaserItem {
         playerIn.getCooldowns().addCooldown(this, m.getCoolDown());
 
         if (!worldIn.isClientSide) {
-            if (getFireMode(stack) != FireMode.SAFE) {
+            LaserTech.LOGGER.log(org.apache.logging.log4j.Level.WARN,  getFireMode(stack).getName());
+            if (getFireMode(stack) != FireModeBasic.SAFE) {
                 worldIn.addFreshEntity(laser);
             }
         }
